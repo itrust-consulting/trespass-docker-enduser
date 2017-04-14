@@ -1,0 +1,98 @@
+#!/bin/bash
+
+set -e
+
+DNS_VALUE=${DNS_VALUE:-trespass.eu}
+
+CAS_HOST="https://cas.$DNS_VALUE"
+FE_HOST="https://$DNS_VALUE"
+
+/trustcert.sh
+
+if [[ -e /app.war ]]; then
+
+	TOMCAT_USER=${TOMCAT_USER:-tomcat}
+	TOMCAT_PASSWORD=${TOMCAT_PASSWORD:-tacmot}
+
+	TOMCAT_JAVA_OPTS=${TOMCAT_JAVA_OPTS:- -server}
+
+	sed 's/{{TOMCAT_USER}}/'"${TOMCAT_USER}"'/' -i /usr/local/tomcat/conf/tomcat-users.xml
+	sed 's/{{TOMCAT_PASSWORD}}/'"${TOMCAT_PASSWORD}"'/' -i /usr/local/tomcat/conf/tomcat-users.xml
+
+	rm -R /usr/local/tomcat/webapps/*
+
+	unzip -d /usr/local/tomcat/webapps/ROOT /app.war
+
+	cp /application.properties /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/
+
+	DB_HOST=${DB_HOST:-mysql}
+	DB_PORT=${DB_PORT:-3306}
+	DB_NAME=${DB_NAME:-trespass}
+	DB_USERNAME=${DB_USERNAME:-trespass}
+	DB_PASSWORD=${DB_PASSWORD:-trespass}
+	SOFTWARECHECKER_URL=${SOFTWARECHECKER_URL:-http://192.168.4.10:8080/softwarechecker/api/whichIsVulnerable}
+	APPSERVER_HOST=${APPSERVER_HOST:-software}
+	APPSERVER_MANAGER_PORT=${APPSERVER_MANAGER_PORT:-5001}
+	APPSERVER_CLIENT_PORT=${APPSERVER_CLIENT_PORT:-5000}
+	RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY:-}
+	RECAPTCHA_PUBLIC_KEY=${RECAPTCHA_PUBLIC_KEY:-}
+	LDAP_ADDRESS=${LDAP_ADDRESS:-ldap://ldap:389}
+	LDAP_BASEDN=${LDAP_BASEDN:-dc=ldap,dc=itrust,dc=lu}
+	LDAP_USERNAME=${LDAP_USERNAME:-cn=admin,dc=ldap,dc=itrust,dc=lu}
+	LDAP_PASSWORD=${LDAP_PASSWORD:-trespass}
+	SMTP_HOST=${SMTP_HOST:-smtp.pt.lu}
+	SMTP_PORT=${SMTP_PORT:-25}
+	SMTP_USERNAME=${SMTP_USERNAME:-username}
+	SMTP_PASSWORD=${SMTP_PASSWORD:-password}
+	SMTP_AUTH_ENABLED=${SMTP_AUTH_ENABLED:-false}
+	SMTP_STARTTLS_ENABLED=${SMTP_STARTTLS_ENABLED:-false}
+	TICKETING_URL=${TICKETING_URL:-https://redmine.$DNS_VALUE}
+
+
+
+	sed -i 's#<DB_HOST>#'"${DB_HOST}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<DB_PORT>#'"${DB_PORT}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<DB_NAME>#'"${DB_NAME}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<DB_USERNAME>#'"${DB_USERNAME}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<DB_PASSWORD>#'"${DB_PASSWORD}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<SOFTWARECHECKER_URL>#'"${SOFTWARECHECKER_URL}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<APPSERVER_HOST>#'"${APPSERVER_HOST}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<APPSERVER_MANAGER_PORT>#'"${APPSERVER_MANAGER_PORT}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<APPSERVER_CLIENT_PORT>#'"${APPSERVER_CLIENT_PORT}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<RECAPTCHA_SECRET_KEY>#'"${RECAPTCHA_SECRET_KEY}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<RECAPTCHA_PUBLIC_KEY>#'"${RECAPTCHA_PUBLIC_KEY}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<CAS_HOST>#'"${CAS_HOST}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<FE_HOST>#'"${FE_HOST}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<LDAP_ADDRESS>#'"${LDAP_ADDRESS}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<LDAP_BASEDN>#'"${LDAP_BASEDN}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<LDAP_USERNAME>#'"${LDAP_USERNAME}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<LDAP_PASSWORD>#'"${LDAP_PASSWORD}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<SMTP_HOST>#'"${SMTP_HOST}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<SMTP_PORT>#'"${SMTP_PORT}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<SMTP_USERNAME>#'"${SMTP_USERNAME}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<SMTP_PASSWORD>#'"${SMTP_PASSWORD}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<SMTP_AUTH_ENABLED>#'"${SMTP_AUTH_ENABLED}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<SMTP_STARTTLS_ENABLED>#'"${SMTP_STARTTLS_ENABLED}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+	sed -i 's#<TICKETING_URL>#'"${TICKETING_URL}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+
+	cp /server.xml /usr/local/tomcat/conf/server.xml
+
+	cp /US_export_policy.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/
+	cp /local_policy.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/
+
+	sed "/#JAVA_OPTS/a JAVA_OPTS=\"$TOMCAT_JAVA_OPTS\"" -i /usr/local/tomcat/bin/catalina.sh
+
+	ln -s /datarepo/attack-navigator/ /usr/local/tomcat/webapps/ROOT/WEB-INF/views/attack-navigator
+	ln -s /datarepo/attack-navigator-map/ /usr/local/tomcat/webapps/ROOT/WEB-INF/views/attack-navigator-map
+
+	ln -s /datarepo/input/ /usr/local/tomcat/webapps/ROOT/WEB-INF/input
+
+	ln -s /datarepo/jnlp/ /usr/local/tomcat/webapps/ROOT/WEB-INF/jnlp
+
+	ln -s /datarepo/visualisation/ /usr/local/tomcat/webapps/ROOT/WEB-INF/views/visualisation
+
+	/usr/local/tomcat/bin/catalina.sh run
+else
+	echo "Cannot start without a war. Mount it to /app.war"
+fi
+

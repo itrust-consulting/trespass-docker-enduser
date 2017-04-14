@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+DNS_VALUE=${DNS_VALUE:-trespass.eu}
+
+mysql -u root fe --execute "UPDATE Tool SET url = \"https://arguesecure.$DNS_VALUE\" WHERE Tool.id = 26;"
+mysql -u root fe --execute "UPDATE Tool SET url = \"https://interactor.$DNS_VALUE\" WHERE Tool.id = 27;"
+

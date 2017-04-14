@@ -1,0 +1,144 @@
+#!/bin/bash
+
+set -e
+
+DNS_VALUE=${DNS_VALUE:-trespass.eu}
+
+FE_URL="https://$DNS_VALUE"
+
+if [[ -e /app.war ]]; then
+
+	TOMCAT_USER=${TOMCAT_USER:-tomcat}
+	TOMCAT_PASSWORD=${TOMCAT_PASSWORD:-tacmot}
+
+	sed 's/{{TOMCAT_USER}}/'"${TOMCAT_USER}"'/' -i /usr/local/tomcat/conf/tomcat-users.xml
+	sed 's/{{TOMCAT_PASSWORD}}/'"${TOMCAT_PASSWORD}"'/' -i /usr/local/tomcat/conf/tomcat-users.xml
+
+	TOMCAT_JAVA_OPTS=${TOMCAT_JAVA_OPTS:- -server}
+	#FE_URL=${FE_URL:-https://localhost:2003}
+	
+	sed "/#JAVA_OPTS/a JAVA_OPTS=\"$TOMCAT_JAVA_OPTS\"" -i /usr/local/tomcat/bin/catalina.sh
+
+	rm -R /usr/local/tomcat/webapps/*
+
+	unzip -d /usr/local/tomcat/webapps/ROOT /app.war
+
+	cp /server.xml /usr/local/tomcat/conf/server.xml
+
+	cp /US_export_policy.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/
+	cp /local_policy.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/
+
+	cp /deployerConfigContext.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/deployerConfigContext.xml
+	cp /cas.properties /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	cp /HTTPS-10000001.json /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/services/HTTPS-10000001.json
+
+	cp /logo.png /usr/local/tomcat/webapps/ROOT/images/
+	
+	rm /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/services/*
+	
+	cp /HTTPS-10000001.json /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/services/
+	
+	cp /casServiceValidationSuccess.jsp /usr/local/tomcat/webapps/ROOT/WEB-INF/view/jsp/protocol/2.0/
+
+	SERVER_NAME=${SERVER_NAME:-http://localhost:8080}
+	SERVER_PREFIX=${SERVER_PREFIX:-\${server.name}/cas}
+	TGC_ENCRYPTION_KEY=${TGC_ENCRYPTION_KEY:-ooxjiVSA0Ewb4YN9Lt3MHFDDSeBB8ny3IqdpK-yv4Mk}
+	TGC_SIGNING_KEY=${TGC_SIGNING_KEY:-LU0oN7JvNS9j_Wqf-jj7lE3ywR1QDYwxr-SWwSOgMm8g0H7fP5_1UZ1p37k844eqyfp2fZF1LejMnx36DzyzjQ}
+	TGC_SECURE=${TGC_SECURE:-false}
+	WARN_COOKIE_SECURE=${WARN_COOKIE_SECURE:-false}
+	CAS_PRINCIPAL_RESOLVER_PERSONDIR_PRINCIPAL_ATTRIBUTE=${CAS_PRINCIPAL_RESOLVER_PERSONDIR_PRINCIPAL_ATTRIBUTE:-cn}
+	WEBFLOW_ENCRYPTION_KEY=${WEBFLOW_ENCRYPTION_KEY:-LcUrrxMgfJSuHLYC}
+	WEBFLOW_SIGNING_KEY=${WEBFLOW_SIGNING_KEY:-WhBkpLu9UobJNmpqrhRdsVMVmcau7BZn1MxCiJWUjJKTPE_BdWUf-MTEbtkZ9-aVzQggTraLiP6kjfF_6Gn-bw}
+	ACCEPT_AUTHN_USERS=${ACCEPT_AUTHN_USERS:-casTest::Mellon}
+	LDAP_URL=${LDAP_URL:-ldap://ldap:389}
+	LDAP_USESTARTTLS=${LDAP_USESTARTTLS:-false}
+	LDAP_ROOTDN=${LDAP_ROOTDN:-dc}
+	LDAP_BASEDN=${LDAP_BASEDN:-ou}
+	LDAP_CONNECTTIMEOUT=${LDAP_CONNECTTIMEOUT:-3000}
+	LDAP_MANAGERDN=${LDAP_MANAGERDN:-cn=admin,dc=ldap,dc=itrust,dc=lu}
+	LDAP_MANAGERPASSWORD=${LDAP_MANAGERPASSWORD:-pass}
+	LDAP_POOL_MINSIZE=${LDAP_POOL_MINSIZE:-1}
+	LDAP_POOL_MAXSIZE=${LDAP_POOL_MAXSIZE:-10}
+	LDAP_POOL_VALIDATEONCHECKOUT=${LDAP_POOL_VALIDATEONCHECKOUT:-false}
+	LDAP_POOL_VALIDATEPERIODICALLY=${LDAP_POOL_VALIDATEPERIODICALLY:-true}
+	LDAP_POOL_BLOCKWAITTIME=${LDAP_POOL_BLOCKWAITTIME:-3000}
+	LDAP_POOL_VALIDATEPERIOD=${LDAP_POOL_VALIDATEPERIOD:-300}
+	LDAP_POOL_PRUNEPERIOD=${LDAP_POOL_PRUNEPERIOD:-300}
+	LDAP_POOL_IDLETIME=${LDAP_POOL_IDLETIME:-600}
+	LDAP_AUTHN_SEARCHFILTER=${LDAP_AUTHN_SEARCHFILTER:-uid}
+	LDAP_DOMAIN=${LDAP_DOMAIN:-ldap.itrust.lu}
+	LDAP_USEPPOLICY=${LDAP_USEPPOLICY:-false}
+	LDAP_ALLOWMULTIPLEDNS=${LDAP_ALLOWMULTIPLEDNS:-false}
+	LDAP_SUBTREE_SEARCH=${LDAP_SUBTREE_SEARCH:-true}
+	LDAP_USE_SSL=${LDAP_USE_SSL:-false}
+	CAS_LOGOUT_REDIRECT=${CAS_LOGOUT_REDIRECT:-false}
+	
+	sed -i 's#{{SERVER_NAME}}#'"${SERVER_NAME}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{SERVER_PREFIX}}#'"${SERVER_PREFIX}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{TGC_ENCRYPTION_KEY}}#'"${TGC_ENCRYPTION_KEY}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{TGC_SIGNING_KEY}}#'"${TGC_SIGNING_KEY}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{TGC_SECURE}}#'"${TGC_SECURE}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{WARN_COOKIE_SECURE}}#'"${WARN_COOKIE_SECURE}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{CAS_PRINCIPAL_RESOLVER_PERSONDIR_PRINCIPAL_ATTRIBUTE}}#'"${CAS_PRINCIPAL_RESOLVER_PERSONDIR_PRINCIPAL_ATTRIBUTE}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{WEBFLOW_ENCRYPTION_KEY}}#'"${WEBFLOW_ENCRYPTION_KEY}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{WEBFLOW_SIGNING_KEY}}#'"${WEBFLOW_SIGNING_KEY}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{ACCEPT_AUTHN_USERS}}#'"${ACCEPT_AUTHN_USERS}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_URL}}#'"${LDAP_URL}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_USESTARTTLS}}#'"${LDAP_USESTARTTLS}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_ROOTDN}}#'"${LDAP_ROOTDN}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_BASEDN}}#'"${LDAP_BASEDN}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_CONNECTTIMEOUT}}#'"${LDAP_CONNECTTIMEOUT}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_MANAGERDN}}#'"${LDAP_MANAGERDN}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_MANAGERPASSWORD}}#'"${LDAP_MANAGERPASSWORD}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_POOL_MINSIZE}}#'"${LDAP_POOL_MINSIZE}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_POOL_MAXSIZE}}#'"${LDAP_POOL_MAXSIZE}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_POOL_VALIDATEONCHECKOUT}}#'"${LDAP_POOL_VALIDATEONCHECKOUT}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_POOL_VALIDATEPERIODICALLY}}#'"${LDAP_POOL_VALIDATEPERIODICALLY}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_POOL_BLOCKWAITTIME}}#'"${LDAP_POOL_BLOCKWAITTIME}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_POOL_VALIDATEPERIOD}}#'"${LDAP_POOL_VALIDATEPERIOD}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_POOL_PRUNEPERIOD}}#'"${LDAP_POOL_PRUNEPERIOD}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_POOL_IDLETIME}}#'"${LDAP_POOL_IDLETIME}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_AUTHN_SEARCHFILTER}}#'"${LDAP_AUTHN_SEARCHFILTER}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_DOMAIN}}#'"${LDAP_DOMAIN}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_USEPPOLICY}}#'"${LDAP_USEPPOLICY}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_ALLOWMULTIPLEDNS}}#'"${LDAP_ALLOWMULTIPLEDNS}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_SUBTREE_SEARCH}}#'"${LDAP_SUBTREE_SEARCH}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{LDAP_USE_SSL}}#'"${LDAP_USE_SSL}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+	sed -i 's#{{CAS_LOGOUT_REDIRECT}}#'"${CAS_LOGOUT_REDIRECT}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/cas.properties
+
+
+	SERVICE_JSON_NAME=${SERVICE_JSON_NAME:-HTTP}
+	SERVICE_JSON_SERVICEID=${SERVICE_JSON_SERVICEID:-^(http|https)://.*\.itrust.lu}
+	SERVICE_JSON_DESCRIPTION=${SERVICE_JSON_DESCRIPTION:-This service definition authorized all application urls that support HTTPS protocols and belong to domain {{SERVICE_JSON_DOMAIN}}.}
+	SERVICE_JSON_DOMAIN=${SERVICE_JSON_DOMAIN:-itrust.lu}
+	
+	sed -i 's#{{SERVICE_JSON_NAME}}#'"${SERVICE_JSON_NAME}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/services/HTTPS-10000001.json
+	sed -i 's#{{SERVICE_JSON_SERVICEID}}#'"${SERVICE_JSON_SERVICEID}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/services/HTTPS-10000001.json
+	sed -i 's#{{SERVICE_JSON_DESCRIPTION}}#'"${SERVICE_JSON_DESCRIPTION}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/services/HTTPS-10000001.json
+	sed -i 's#{{SERVICE_JSON_DOMAIN}}#'"${SERVICE_JSON_DOMAIN}"'#' /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/services/HTTPS-10000001.json
+
+	sed -i "s#<a id=\"logo\" href=\"http://www.apereo.org\" title=\"<spring:message code=\"logo.title\" />\">Apereo</a>#<a id=\"logo\" href=\"\" title=\"Trespass central authentication service\">Trespass central authentication service</a>#" /usr/local/tomcat/webapps/ROOT/WEB-INF/view/jsp/default/ui/includes/top.jsp
+
+	sed -i "/form>/a <a href=\"$FE_URL/user/add\" >Sign-up</a> <a href=\"$FE_URL/resetpassword\" >Reset password</a>" /usr/local/tomcat/webapps/ROOT/WEB-INF/view/jsp/default/ui/casLoginView.jsp
+
+	sed -i 's/153e50/eee/g' /usr/local/tomcat/webapps/ROOT/css/cas.css
+	sed -ie '/footer a:link, footer a:visited/{n;N;d}' /usr/local/tomcat/webapps/ROOT/css/cas.css
+	sed -i '/footer a:link, footer a:visited/a color: black;' /usr/local/tomcat/webapps/ROOT/css/cas.css
+	sed -ie '/footer {/{n;N;d}' /usr/local/tomcat/webapps/ROOT/css/cas.css
+	sed -i '/footer {/a color: black;' /usr/local/tomcat/webapps/ROOT/css/cas.css
+	
+	cp /opt/woffs/* /usr/local/tomcat/webapps/ROOT/css/
+	
+	cp /opt/font.css /usr/local/tomcat/webapps/ROOT/css/
+	
+	cat /usr/local/tomcat/webapps/ROOT/css/cas.css >> /opt/font.css
+	
+	cp /opt/font.css /usr/local/tomcat/webapps/ROOT/css/cas.css
+	
+	sed -i 's/font-family: Verdana, sans-serif;/font-family: Source Sans Pro, sans-serif;/' /usr/local/tomcat/webapps/ROOT/css/cas.css
+
+	/usr/local/tomcat/bin/catalina.sh run
+else
+	echo "Cannot start without a war. Mount it to /app.war"
+fi
+

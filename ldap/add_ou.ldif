@@ -1,0 +1,4 @@
+dn: ou=people,dc=ldap,dc=itrust,dc=lu
+objectClass: organizationalUnit
+objectClass: top
+ou: people

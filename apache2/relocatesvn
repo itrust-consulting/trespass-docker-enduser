@@ -1,0 +1,4 @@
+#!/bin/bash
+cd /opt/svn/repo1/trespass-svn.itrust.lu/
+echo "relocating svn with $SVN_USERNAME user"
+svn relocate "https://svn.$DNS_VALUE" --username $SVN_USERNAME --password $SVN_PASSWORD --non-interactive --trust-server-cert

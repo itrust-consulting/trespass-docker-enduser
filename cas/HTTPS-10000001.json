@@ -1,0 +1,26 @@
+{
+  "@class" : "org.jasig.cas.services.RegexRegisteredService",
+  "serviceId" : "{{SERVICE_JSON_SERVICEID}}",
+  "name" : "{{SERVICE_JSON_NAME}}",
+  "id" : 10000001,
+  "description" : "This service definition authorized all application urls that support HTTPS protocols and belongs to domain {{SERVICE_JSON_DOMAIN}}.",
+  "proxyPolicy" : {
+    "@class" : "org.jasig.cas.services.RefuseRegisteredServiceProxyPolicy"
+  },
+  "evaluationOrder" : 10000,
+  "usernameAttributeProvider" : {
+    "@class" : "org.jasig.cas.services.DefaultRegisteredServiceUsernameProvider"
+  },
+  "logoutType" : "BACK_CHANNEL",
+  "attributeReleasePolicy" : {
+    "@class" : "org.jasig.cas.services.ReturnAllowedAttributeReleasePolicy",
+	"allowedAttributes" : [ "java.util.ArrayList", [ "firstname", "lastname","email" ] ],
+	"authorizedToReleaseCredentialPassword" : false,
+    "authorizedToReleaseProxyGrantingTicket" : false
+  },
+  "accessStrategy" : {
+    "@class" : "org.jasig.cas.services.DefaultRegisteredServiceAccessStrategy",
+    "enabled" : true,
+    "ssoEnabled" : true
+  }
+}
