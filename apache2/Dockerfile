@@ -64,8 +64,6 @@ RUN make dist
 
 ADD apache2.conf /apache2.conf
 
-#ADD epl-server-ca.crt /epl-server-ca.crt
-
 RUN mkdir /var/cache/apache2/mod_auth_cas/ -p
 
 RUN chown -R www-data:www-data /var/cache/apache2/
