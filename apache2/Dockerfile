@@ -86,8 +86,6 @@ ADD trustcert.sh /trustcert.sh
 
 ADD mime.types /etc/mime.types
 
-ADD apache2.conf /apache2.conf
-
 ADD relocatesvn /relocatesvn
 
 RUN rm /etc/localtime

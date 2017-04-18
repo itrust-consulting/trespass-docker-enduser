@@ -1,0 +1,2 @@
+#!/bin/bash
+mysql -u root redmine --execute "UPDATE settings SET value ='--- \!ruby/hash:ActiveSupport::HashWithIndifferentAccess\r\nenabled: \'true\'\r\nmaintain_standard_login: \'true\'\r\nauto_create_users: \'true\'\r\nauto_update_users: \'true\'\r\nauto_user_attributes_map: firstname=firstname&lastname=lastname&mail=email\r\nlogout_of_cas_on_logout: \'true\'\r\nbase_url: https://cas.$DNS_VALUE\r\nlogin_url: \'\'\r\nlogout_url: \'\'\r\nvalidate_url: \'\'\r\nusername_session_key: cas_user\r\nextra_attributes_session_key: cas_extra_attributes\r\n' WHERE settings.id = 1";

@@ -1,2 +1,6 @@
 data/
-\.docker-compose*
+/docker-compose.yml
+/.docker-compose.*
+logs
+/*.env
+/genvar

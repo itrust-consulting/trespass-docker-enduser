@@ -1,0 +1,170 @@
+phpmyadmin:
+  image: phpmyadmin/phpmyadmin
+  links:
+   - mysql:db
+  ports:
+   - "8080:80"
+
+rp:
+  build: rp
+  volumes:
+   - ./data/rp/rp.conf:/default-ssl.conf
+   - ./data/rp/logs/:/var/log/apache2/
+   - ./data/rp/certs/:/certs/
+   - ./data/rp/keys/:/keys/
+  links:
+   - fe
+   - cas
+   - tkb
+   - svn
+   - arguesecure
+   - interactor
+   - redmine
+   - tkblogs
+   - tkb-fe
+  extra_hosts:
+   - "trespass.local: 127.0.0.1"
+   - "cas.trespass.local: 127.0.0.1"
+   - "svn.trespass.local: 127.0.0.1"
+   - "arguesecure.trespass.local:127.0.0.1"
+   - "interactor.trespass.local:127.0.0.1"
+   - "redmine.trespass.local:127.0.0.1"
+   - "tkblogs.trespass.local:127.0.0.1"
+  ports:
+   - "80:80"
+   - "443:443"
+  env_file:
+   - ./rp.env
+
+ldap:
+  build: ldap
+  env_file:
+   - ./ldap.env
+  volumes:
+   - ./data/ldap/etc:/etc/ldap
+   - ./data/ldap/var:/var/lib/ldap
+
+cas:
+  build: cas
+  links:
+   - ldap
+  env_file:
+   - ./cas.env
+  volumes:
+   - ./data/cas:/tmp
+
+svn:
+  build: apache2
+  links:
+   - ldap
+  volumes:
+   - ./data/svn/:/opt/svn
+   - ./data/rp/certs/:/certs/
+   - ./data/svn/logs/:/var/log/apache2/
+  env_file:
+   - ./svn.env
+  extra_hosts:
+   - "svn.trespass.local: 10.0.0.2"
+
+tkb-fe:
+  build: apache2
+  links:
+   - cas
+   - tkb
+  env_file:
+   - ./tkb-fe.env
+  extra_hosts:
+   - "cas.trespass.local: 10.0.0.2"
+  volumes:
+   - ./data/rp/certs/:/certs/
+   - ./data/tkb-fe/logs/:/var/log/apache2/
+   
+tkb:
+  build: tkb
+  volumes:
+   - ./data/svn/repo1/:/opt/svn/
+
+software:
+  build: software
+  volumes:
+   - ./data/software/:/opt/appserver
+   - ./data/svn/repo1/:/var/www/:ro
+
+mysql:
+  build: mysql
+  env_file:
+   - ./mysql.env
+  volumes:
+   - ./data/mysql/data:/var/lib/mysql/
+
+fe:
+  build: fe
+  env_file:
+   - ./fe.env
+  links:
+   - ldap
+   - mysql
+   - cas
+   - software
+  volumes:
+   - ./data/svn/repo1/trespass-svn.itrust.lu/:/datarepo/  
+   - ./data/rp/certs/:/certs/
+  extra_hosts:
+   - "cas.trespass.local: 10.0.0.2"
+
+tkblogs:
+  build: apache2
+  links:
+   - cas
+  env_file:
+   - ./tkblogs.env
+  volumes:
+   - ./data/svn/repo1/trespass-svn.itrust.lu/TREsPASS_KB/logs/:/var/www/
+   - ./data/rp/certs/:/certs/
+   - ./data/tkblogs/logs/:/var/log/apache2/
+  extra_hosts:
+   - "cas.trespass.local: 10.0.0.2"
+
+redmine:
+  build: redmine
+  ports:
+   - "2005:80"
+  links:
+   - cas
+   - mysql
+  env_file:
+   - ./redmine.env
+  extra_hosts:
+   - "cas.trespass.local: 10.0.0.2"
+  volumes:
+   - ./data/rp/certs/:/certs/
+     
+arguesecure:
+  build: arguesecure
+  links:
+   - mysql
+   - arguesecure-memcached
+   - arguesecure-redis
+   - arguesecure-node
+  env_file:
+   - ./arguesecure.env
+
+arguesecure-memcached:
+  build: memcached
+
+arguesecure-redis:
+  build: redis
+   
+arguesecure-node:
+  build: node   
+   
+interactor-db:
+  build: mongo
+  volumes:
+   - ./data/mongo/db:/data/db
+   - ./data/mongo/configdb:/data/configdb
+  
+interactor:
+  build: interactor
+  links:
+   - interactor-db
